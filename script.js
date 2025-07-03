@@ -8,13 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const daysContainer = document.querySelector(".days");
 
   const today = new Date();
-  let currentDate = new Date(today); // Tracks the currently viewed month
+  let currentDate = new Date(today);
 
   // Configuration
-  const minDate = new Date(2020, 0, 1); // Jan 1, 2020
-  const maxDate = new Date(2030, 11, 31); // Dec 31, 2030
+  const minDate = new Date(2020, 0, 1);
+  const maxDate = new Date(2030, 11, 31);
 
-  // Format date as dd / mm / yyyy
   function formatDate(date) {
     const d = String(date.getDate()).padStart(2, "0");
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -22,54 +21,42 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${d} / ${m} / ${y}`;
   }
 
-  // Toggle calendar
   iconButton.addEventListener("click", () => {
     calendar.style.display = calendar.style.display === "block" ? "none" : "block";
   });
 
-  // Close calendar if clicking outside
   document.addEventListener("click", (e) => {
     if (!document.querySelector(".datepicker").contains(e.target)) {
       calendar.style.display = "none";
     }
   });
 
-  // Render calendar grid
   function renderCalendar(date) {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
-    // Header update
     monthYear.textContent = `${date.toLocaleString("default", {
       month: "long"
     })} ${year}`;
 
-    // Clear existing days
     daysContainer.innerHTML = "";
 
-    // Padding for the start of the month
     for (let i = 0; i < firstDay; i++) {
       daysContainer.innerHTML += `<span></span>`;
     }
 
-    // Fill days
     for (let i = 1; i <= lastDate; i++) {
       const loopDate = new Date(year, month, i);
+      const span = document.createElement("span");
+      span.textContent = i;
 
-      // Check if it's within allowed range
       if (loopDate < minDate || loopDate > maxDate) {
-        const span = document.createElement("span");
-        span.textContent = i;
-        span.style.color = "#ccc";
-        span.style.cursor = "default";
+        span.classList.add("disabled");
         daysContainer.appendChild(span);
         continue;
       }
-
-      const span = document.createElement("span");
-      span.textContent = i;
 
       // Highlight today
       if (
@@ -77,12 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
         loopDate.getMonth() === today.getMonth() &&
         loopDate.getDate() === today.getDate()
       ) {
-        span.style.backgroundColor = "#007BFF";
-        span.style.color = "white";
-        span.style.borderRadius = "50%";
+        span.classList.add("today");
       }
 
-      // Selectable day
       span.tabIndex = 0;
       span.addEventListener("click", () => {
         input.value = formatDate(loopDate);
@@ -100,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Navigation buttons
   prevBtn.addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
@@ -111,6 +94,5 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCalendar(currentDate);
   });
 
-  // Initial render
   renderCalendar(currentDate);
 });
