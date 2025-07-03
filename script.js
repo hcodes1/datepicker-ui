@@ -7,7 +7,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextBtn = document.querySelector(".next");
   const daysContainer = document.querySelector(".days");
 
-  let currentDate = new Date();
+  const today = new Date();
+  let currentDate = new Date(today); // Tracks the currently viewed month
+
+  // Configuration
+  const minDate = new Date(2020, 0, 1); // Jan 1, 2020
+  const maxDate = new Date(2030, 11, 31); // Dec 31, 2030
+
+  // Format date as dd / mm / yyyy
+  function formatDate(date) {
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const y = date.getFullYear();
+    return `${d} / ${m} / ${y}`;
+  }
 
   // Toggle calendar
   iconButton.addEventListener("click", () => {
@@ -21,38 +34,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Render calendar
+  // Render calendar grid
   function renderCalendar(date) {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
+    // Header update
     monthYear.textContent = `${date.toLocaleString("default", {
       month: "long"
     })} ${year}`;
 
+    // Clear existing days
     daysContainer.innerHTML = "";
 
-    // Padding for first row
+    // Padding for the start of the month
     for (let i = 0; i < firstDay; i++) {
       daysContainer.innerHTML += `<span></span>`;
     }
 
-    // Dates
+    // Fill days
     for (let i = 1; i <= lastDate; i++) {
+      const loopDate = new Date(year, month, i);
+
+      // Check if it's within allowed range
+      if (loopDate < minDate || loopDate > maxDate) {
+        const span = document.createElement("span");
+        span.textContent = i;
+        span.style.color = "#ccc";
+        span.style.cursor = "default";
+        daysContainer.appendChild(span);
+        continue;
+      }
+
       const span = document.createElement("span");
       span.textContent = i;
+
+      // Highlight today
+      if (
+        loopDate.getFullYear() === today.getFullYear() &&
+        loopDate.getMonth() === today.getMonth() &&
+        loopDate.getDate() === today.getDate()
+      ) {
+        span.style.backgroundColor = "#007BFF";
+        span.style.color = "white";
+        span.style.borderRadius = "50%";
+      }
+
+      // Selectable day
+      span.tabIndex = 0;
       span.addEventListener("click", () => {
-        const selectedDate = new Date(year, month, i);
-        input.value = selectedDate.toLocaleDateString("en-GB"); // dd/mm/yyyy
+        input.value = formatDate(loopDate);
         calendar.style.display = "none";
       });
+
+      span.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          input.value = formatDate(loopDate);
+          calendar.style.display = "none";
+        }
+      });
+
       daysContainer.appendChild(span);
     }
   }
 
-  // Event listeners for nav
+  // Navigation buttons
   prevBtn.addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
@@ -63,5 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCalendar(currentDate);
   });
 
+  // Initial render
   renderCalendar(currentDate);
 });
